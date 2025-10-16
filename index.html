@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lattice Bypass</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Warm Dark Coffee Theme */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #3e2723; /* Deep Espresso Background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            color: #f7f7f7; /* Light text for dark body background */
+        }
+
+        /* Container Styling - Rich Coffee Brown */
+        #app {
+            background-color: #5d4037; /* Richer Coffee tone for the container */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            border-top-color: #795548; /* Lightened accent color for contrast */
+            color: #f7f7f7; /* Light text for dark container */
+            position: relative; /* Essential to layer above particles */
+            z-index: 10; 
+        }
+        
+        /* Custom styling for the range slider track */
+        input[type="range"]::-webkit-slider-runnable-track {
+            background: #96715e; /* Lighter coffee tone */
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-moz-range-track {
+            background: #96715e;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3e2723; /* Dark Espresso Bean color */
+            cursor: pointer;
+            margin-top: -7px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3e2723;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- PARTICLE SYSTEM CSS (Larger Floating Dots) --- */
+        #motes-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; 
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* Animation for subtle floating movement */
+        @keyframes float-motes {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(70px, -100px); } /* Increased movement range */
+            100% { transform: translate(0, 0); }
+        }
+
+        /* Layer 1: Larger, slower dots */
+        #motes-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 10px; 
+            height: 10px; 
+            border-radius: 50%;
+            box-shadow: 
+                -100px 300px 3px 3px rgba(255, 255, 255, 0.15),
+                400px 800px 2px 2px rgba(255, 255, 255, 0.1),
+                800px 100px 3px 3px rgba(255, 255, 255, 0.2),
+                1200px 600px 2px 2px rgba(255, 255, 255, 0.15),
+                -300px 500px 3px 3px rgba(255, 255, 255, 0.1),
+                600px 200px 2px 2px rgba(255, 255, 255, 0.2); 
+            animation: float-motes 60s ease-in-out infinite alternate; 
+        }
+
+        /* Layer 2: Faster, slightly brighter dots */
+        #motes-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 10px; 
+            height: 10px; 
+            border-radius: 50%;
+            box-shadow: 
+                -200px 100px 3px 3px rgba(255, 255, 255, 0.25),
+                100px 900px 2px 2px rgba(255, 255, 255, 0.15),
+                900px 400px 3px 3px rgba(255, 255, 255, 0.2),
+                1100px 200px 2px 2px rgba(255, 255, 255, 0.25),
+                -50px 750px 3px 3px rgba(255, 255, 255, 0.15),
+                700px 50px 2px 2px rgba(255, 255, 255, 0.2); 
+            animation: float-motes 40s ease-in-out infinite alternate reverse; 
+        }
+        /* --- END PARTICLE SYSTEM CSS --- */
+
+
+        /* Loading Spinner CSS */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #ffc107; /* Warm Gold Spin color */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        /* Modal Content - Medium Coffee Color */
+        .modal-content {
+            background: #5a3d2a;
+            padding: 3rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+            color: #f7f7f7;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- New Particle Background Container -->
+    <div id="motes-container"></div>
+
+    <div id="app" class="w-full max-w-md p-6 md:p-8 rounded-xl shadow-2xl border-t-8 transition duration-300 transform hover:scale-[1.01]">
+        
+        <h1 class="text-3xl font-extrabold text-amber-300 mb-2">
+            Lattice Bypass
+        </h1>
+        <p class="text-gray-200 mb-6">
+            Set the **Page amount** (number of new browser windows) to start the Lattice Bypass system.
+        </p>
+
+        <div class="bg-red-800 bg-opacity-50 p-4 rounded-lg border-l-4 border-red-500 mb-6 text-red-100">
+            <p class="font-bold">⚠️ High Stress Warning</p>
+            <p class="text-sm mt-1">
+                Opening this many connections (up to **200<**) may severely **slow down, freeze, or blackscreen** your chromebook. Use if you've read the guid!
+            </p>
+        </div>
+
+        <!-- Slider Section -->
+        <div class="mb-8">
+            <label for="windowCount" class="block text-sm font-medium text-gray-200 mb-2">
+                Bypass Level (Higher number = Higher Bypass): <span id="countDisplay" class="font-bold text-xl text-amber-300">30</span>
+            </label>
+            <input 
+                type="range" 
+                id="windowCount" 
+                min="30" 
+                max="500" 
+                value="30" 
+                step="1" 
+                class="w-full h-2 rounded-lg appearance-none cursor-pointer range-lg transition duration-150"
+            >
+        </div>
+
+        <button 
+            id="runSpawnerBtn"
+            class="w-full py-3 bg-amber-600 text-white font-bold rounded-lg shadow-xl hover:bg-amber-700 transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-amber-500 mb-3"
+            onclick="openWindows()"
+        >
+            Execute Bypass Sequence
+        </button>
+
+        <!-- New Close Button -->
+        <button 
+            id="closeSpawnerBtn"
+            class="w-full py-3 bg-red-600 text-white font-bold rounded-lg shadow-xl hover:bg-red-700 transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-red-500"
+            onclick="closeAllWindows()"
+        >
+            Close All Connections
+        </button>
+
+        <p id="statusMessage" class="text-center mt-4 text-sm text-gray-300"></p>
+    </div>
+
+    <!-- Loading Modal -->
+    <div id="loadingModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="spinner mx-auto mb-4"></div>
+            <p class="text-lg font-semibold text-amber-300">Initializing Bypass Sequence...</p>
+            <p class="text-sm text-gray-400 mt-2">Please wait, your browser is being stressed.</p>
+        </div>
+    </div>
+
+    <script>
+        const MIN_WINDOWS = 30;
+        const MAX_WINDOWS = 500; // Increased maximum to 500
+        
+        let openedWindows = []; // Global array to store window references
+
+        const windowCountInput = document.getElementById('windowCount');
+        const countDisplay = document.getElementById('countDisplay');
+        const statusMessage = document.getElementById('statusMessage');
+        const loadingModal = document.getElementById('loadingModal');
+
+        // Update the display when the slider moves
+        windowCountInput.addEventListener('input', () => {
+            countDisplay.textContent = windowCountInput.value;
+        });
+
+        // Function to close all windows stored in the array
+        function closeAllWindows() {
+            let closedCount = 0;
+            openedWindows.forEach(win => {
+                // Check if the window is still open before attempting to close
+                if (win && !win.closed) {
+                    win.close();
+                    closedCount++;
+                }
+            });
+            openedWindows = []; // Clear the list after closing
+            statusMessage.innerHTML = `**Termination Complete.** ${closedCount} connections successfully closed.`;
+        }
+
+        // Main function to open the windows
+        function openWindows() {
+            const numWindows = parseInt(windowCountInput.value, 10);
+            
+            if (numWindows < MIN_WINDOWS || numWindows > MAX_WINDOWS) {
+                statusMessage.textContent = `Error: Please select a number between ${MIN_WINDOWS} and ${MAX_WINDOWS}.`;
+                return;
+            }
+
+            // Clear any previously opened windows before starting a new sequence
+            closeAllWindows(); 
+
+            // 1. Show Loading Modal and status message
+            loadingModal.style.display = 'flex';
+            statusMessage.textContent = `Attempting to open ${numWindows} windows... (Check your popup blocker!)`;
+            
+            let openedCount = 0;
+            const startTime = Date.now();
+
+            // Run the window opening loop
+            for (let i = 0; i < numWindows; i++) {
+                // Open a new blank window. 
+                const newWindow = window.open('about:blank', '_blank', `width=300,height=200,left=${i * 10},top=${i * 10}`);
+                
+                if (newWindow) {
+                    openedWindows.push(newWindow); // Store reference
+                    openedCount++;
+                }
+            }
+
+            const endTime = Date.now();
+            
+            // 2. Use a short delay before hiding the modal, allowing the visual effect of the spinner
+            setTimeout(() => {
+                loadingModal.style.display = 'none'; // Hide modal
+
+                const totalTime = (endTime - startTime) / 1000;
+                statusMessage.innerHTML = `**Sequence Complete.** **${openedCount}** bypass threads established (out of ${numWindows} requested) in ${totalTime.toFixed(2)} seconds.`;
+
+                // If fewer windows opened, remind user about the popup blocker
+                if (openedCount < numWindows) {
+                    statusMessage.innerHTML += '<br><span class="text-red-300 font-semibold">Note: Browser popup blockers likely prevented some threads from initializing.</span>';
+                }
+            }, 1500); // Wait 1.5 seconds to show the spinner effect
+        }
+    </script>
+</body>
+</html>
