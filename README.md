@@ -1,2 +1,2 @@
 # Lattice-Bypass
-Newest GoGuardian Bypass!
+This is just a concept tho
